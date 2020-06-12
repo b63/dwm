@@ -24,6 +24,15 @@ static const char *colors[][3]      = {
 	[SchemeSel]  = { selfgcol, selbgcol,  selbordercol },
 };
 
+static const unsigned int baralpha        = 0xd0U;
+static const unsigned int borderalpha     = OPAQUE;
+static const unsigned int alphas[][3] = {
+	/*               fg         bg         border   */
+	[SchemeNorm] = { OPAQUE,    baralpha,  OPAQUE },
+	[SchemeSel]  = { OPAQUE,    baralpha,  OPAQUE },
+};
+
+
 typedef struct {
 	const char *name;
 	const void *cmd;
