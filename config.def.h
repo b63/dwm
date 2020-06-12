@@ -38,7 +38,7 @@ typedef struct {
 	const void *cmd;
 } Sp;
 const char *spcmd1[] = {"alacritty", "--class", "spterm", NULL };
-const char *spcmd2[] = {"alacritty", "--class", "spfm",  "-e", "ranger", NULL };
+const char *spcmd2[] = {"alacritty", "--class", "spfm",  "-e", "lf", NULL };
 const char *spcmd3[] = {"keeweb.sh", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
