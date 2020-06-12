@@ -44,7 +44,7 @@ static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",      spcmd1},
 	{"spranger",    spcmd2},
-	{"keepass",   spcmd3},
+	{"keeweb",   spcmd3},
 };
 
 
@@ -61,7 +61,7 @@ static const Rule rules[] = {
 	{ "Firefox",	NULL,		NULL,		1 << 8,		0,		 -1 },
 	{ NULL,		"spterm",	NULL,		SPTAG(0),	1,		 -1 },
 	{ NULL,		"spfm",		NULL,		SPTAG(1),	1,		 -1 },
-	{ NULL,		"keepass",	NULL,		SPTAG(2),	0,		 -1 },
+	{ NULL,		"keeweb",	NULL,		SPTAG(2),	1,		 -1 },
 };
 
 /* layout(s) */
