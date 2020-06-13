@@ -317,28 +317,6 @@ static size_t taghist[LENGTH(tags)] = { 0 };
 /* index of most recent tag in taghist */
 static size_t taghisthead = 0;
 
-//TODO: remove later
-void printbinary(size_t x)
-{
-    size_t i = 0;
-    char output[72];
-    size_t bits = 0;
-    while (x)
-    {
-        ++bits;
-        char c = (x & 1) ? '1' : '0';
-        output[i++] = c;
-        if (!(bits%4))
-            output[i++] = ' ';
-        x = x >> 1;
-    }
-    for(size_t j = 0; j < i; ++j)
-    {
-        printf("%c", output[i-j-1]);
-    }
-    printf("\n");
-}
-
 /* function implementations */
 void
 applyrules(Client *c)
@@ -1641,7 +1619,6 @@ switchtotaglayout(size_t tag)
     selmon->lt[0] = tagltstable[tag].lts[0];
     selmon->lt[1] = tagltstable[tag].lts[1];
     selmon->sellt = tagltstable[tag].sellt;
-    printf("(switchtotaglayout) tag %lu -> lt %s\n", tag, selmon->lt[selmon->sellt]->symbol);
 }
 
 void
@@ -1665,7 +1642,6 @@ setlayout(const Arg *arg)
 			{
 				unsigned int sellt = tagltstable[i].sellt;
 				tagltstable[i].lts[sellt] = lt;
-                                printf("(setlayout) %lu -> %s\n", i, lt->symbol);
 			}
 		}
 	}
@@ -1995,9 +1971,6 @@ toggleview(const Arg *arg)
             taghisthead = write_i > 0 ? write_i-1 : 0;
         }
 
-        printf("(toggleview) taghist {");
-        for (size_t i = 0; i <= taghisthead; ++i) printf("%lu ", taghist[i]);
-        printf("}\n");
 	if (newtagset & LTTAGMASK) {
 		selmon->tagset[selmon->seltags] = newtagset;
                 switchtotaglayout(taghist[0]);
@@ -2308,12 +2281,6 @@ view(const Arg *arg)
                 /* reset toggle history */
                 taghisthead = getones(arg->ui & LTTAGMASK, taghist)-1;
                 switchtotaglayout(taghist[0]);
-
-                printf("(view) taghead: %lu   taghist {", taghisthead);
-                for (size_t i = 0; i <= taghisthead; ++i) printf("%lu ", taghist[i]);
-                printf("}   mask ");
-                printbinary(arg->ui &TAGMASK);
-
 	}
 	focus(NULL);
 	arrange(selmon);
