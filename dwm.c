@@ -58,6 +58,7 @@
 #define TAGMASK                 ((1 << NUMTAGS) - 1)
 #define SPTAG(i)                ((1 << LENGTH(tags)) << (i))
 #define SPTAGMASK               (((1 << LENGTH(scratchpads))-1) << LENGTH(tags))
+#define LTTAGMASK               ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define OPAQUE                  0xffU
 
@@ -255,6 +256,10 @@ static void xinitvisual();
 static void centeredmaster(Monitor *m);
 static void centeredfloatingmaster(Monitor *m);
 
+static void inittagltarr(void);
+static void switchtotaglayout(size_t tag);
+static size_t getones(unsigned int shiftednum, size_t *dst);
+
 /* variables */
 static const char broken[] = "broken";
 static char stext[256];
@@ -295,11 +300,44 @@ static Visual *visual;
 static int depth;
 static Colormap cmap;
 
+
 /* configuration, allows nested code to access above variables */
 #include "config.h"
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
+
+typedef struct {
+    const Layout *lts[2];
+    unsigned int sellt;
+} LayoutInfo;
+static LayoutInfo tagltstable[LENGTH(tags)];
+
+static size_t taghist[LENGTH(tags)] = { 0 };
+/* index of most recent tag in taghist */
+static size_t taghisthead = 0;
+
+//TODO: remove later
+void printbinary(size_t x)
+{
+    size_t i = 0;
+    char output[72];
+    size_t bits = 0;
+    while (x)
+    {
+        ++bits;
+        char c = (x & 1) ? '1' : '0';
+        output[i++] = c;
+        if (!(bits%4))
+            output[i++] = ' ';
+        x = x >> 1;
+    }
+    for(size_t j = 0; j < i; ++j)
+    {
+        printf("%c", output[i-j-1]);
+    }
+    printf("\n");
+}
 
 /* function implementations */
 void
@@ -1595,12 +1633,43 @@ incrogaps(const Arg *arg)
 }
 
 void
+switchtotaglayout(size_t tag)
+{
+    if (tag >= LENGTH(tags)) return;
+
+    /* update the pointers to recent two layouts */
+    selmon->lt[0] = tagltstable[tag].lts[0];
+    selmon->lt[1] = tagltstable[tag].lts[1];
+    selmon->sellt = tagltstable[tag].sellt;
+    printf("(switchtotaglayout) tag %lu -> lt %s\n", tag, selmon->lt[selmon->sellt]->symbol);
+}
+
+void
 setlayout(const Arg *arg)
 {
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+	{
 		selmon->sellt ^= 1;
+		tagltstable[taghist[0]].sellt ^= 1;
+	}
 	if (arg && arg->v)
-		selmon->lt[selmon->sellt] = (Layout *)arg->v;
+	{
+                Layout *lt = (Layout *) arg->v;
+		selmon->lt[selmon->sellt] = lt;
+
+		/* change layout of all selected tags */
+		unsigned int tagmask = selmon->tagset[selmon->seltags];
+		for (size_t i = 0; i < LENGTH(tags); ++i)
+		{
+			if ( tagmask & (1 << i) )
+			{
+				unsigned int sellt = tagltstable[i].sellt;
+				tagltstable[i].lts[sellt] = lt;
+                                printf("(setlayout) %lu -> %s\n", i, lt->symbol);
+			}
+		}
+	}
+
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
 		arrange(selmon);
@@ -1642,6 +1711,7 @@ setup(void)
 	sh = DisplayHeight(dpy, screen);
 	root = RootWindow(dpy, screen);
 	xinitvisual();
+	inittagltarr();
 	drw = drw_create(dpy, screen, root, sw, sh, visual, depth, cmap);
 	if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
 		die("no fonts could be loaded.");
@@ -1885,13 +1955,52 @@ toggletag(const Arg *arg)
 	}
 }
 
+
 void
 toggleview(const Arg *arg)
 {
+	const unsigned int ltmask = (arg->ui & LTTAGMASK);
 	unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
 
-	if (newtagset) {
+	/* check if tag was toggled on/off, update toggle history */
+	if (newtagset & ltmask)
+        {
+            size_t numtoggledon = getones(newtagset & ltmask, &(taghist[taghisthead+1]) );
+            taghisthead += numtoggledon;
+        }
+        else if (newtagset & LTTAGMASK)
+        {
+            // TODO: fix horrible n^2 complexity, maybe too small to matter
+            size_t temp[LENGTH(tags)] = {0};
+            size_t numtoggledoff = getones(~newtagset & ltmask, temp);
+
+            size_t write_i = 0;
+            size_t read_i  = 0;
+            while (read_i <= taghisthead)
+            {
+                int remove = 0;
+                for (size_t j = 0; j < numtoggledoff; ++j)
+                {
+                    if (taghist[read_i] == temp[j]){
+                        remove = 1;
+                        break;
+                    }
+                }
+
+                if (!remove)
+                    taghist[write_i++] = taghist[read_i];
+                ++read_i;
+            }
+
+            taghisthead = write_i > 0 ? write_i-1 : 0;
+        }
+
+        printf("(toggleview) taghist {");
+        for (size_t i = 0; i <= taghisthead; ++i) printf("%lu ", taghist[i]);
+        printf("}\n");
+	if (newtagset & LTTAGMASK) {
 		selmon->tagset[selmon->seltags] = newtagset;
+                switchtotaglayout(taghist[0]);
 		focus(NULL);
 		arrange(selmon);
 	}
@@ -2188,11 +2297,24 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+        /* TAGMASK includes bits for scratchpads*/
+        /* LTTAGMASK only includes bits for 'workspace' tags */
+	if ((arg->ui & LTTAGMASK) == selmon->tagset[selmon->seltags])
 		return;
 	selmon->seltags ^= 1; /* toggle sel tagset */
-	if (arg->ui & TAGMASK)
+	if (arg->ui & LTTAGMASK) {
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+
+                /* reset toggle history */
+                taghisthead = getones(arg->ui & LTTAGMASK, taghist)-1;
+                switchtotaglayout(taghist[0]);
+
+                printf("(view) taghead: %lu   taghist {", taghisthead);
+                for (size_t i = 0; i <= taghisthead; ++i) printf("%lu ", taghist[i]);
+                printf("}   mask ");
+                printbinary(arg->ui &TAGMASK);
+
+	}
 	focus(NULL);
 	arrange(selmon);
 }
@@ -2417,6 +2539,42 @@ centeredfloatingmaster(Monitor *m)
 		       m->wh - (2*c->bw), 0);
 		tx += WIDTH(c);
 	}
+}
+
+void
+inittagltarr(void)
+{
+    size_t len = LENGTH(tags);
+    size_t len2 = LENGTH(defaulttaglts);
+    const Layout *defaultlayout = NULL;
+    for (size_t i = 0; i < len; ++i) 
+    {
+        if (i < len2) defaultlayout = &layouts[defaulttaglts[i]];
+        else          defaultlayout = &layouts[0];
+
+        tagltstable[i].lts[0] = defaultlayout;
+        tagltstable[i].lts[1] = defaultlayout;
+    }
+}
+
+size_t
+getones(unsigned int shiftednum, size_t *dst)
+{
+    /* returns number of 1's found in shifted num.
+     * stores digits place of the ones in dst  */
+    if (!shiftednum)
+	return 0;
+
+    size_t ind = 0;
+    unsigned int i = 0;
+    while (shiftednum)
+    {
+        if (shiftednum & 1)
+            dst[ind++] = i;
+        shiftednum  = shiftednum >> 1;
+        ++i;
+    }
+    return ind;
 }
 
 int
