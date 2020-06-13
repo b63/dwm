@@ -10,6 +10,8 @@ static const unsigned int gappov    = 10;       /* vert outer gap between window
 static const int smartgaps          = 1;        /* 1 means no outer gap when there is only one window */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
+static const int horizpadbar       = 5;        /* horizontal padding for statusbar */
+static const int vertpadbar        = 10;        /* vertical padding for statusbar */
 static const char *fonts[]          = { "mononoki Nerd Font:size=10", "Source Code Pro:size=10" };
 static const char dmenufont[]       = "mononoki Nerd Font:size=10";
 static const char bgcol[]           = "#222222";
