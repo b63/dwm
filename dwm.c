@@ -2070,8 +2070,8 @@ updatebars(void)
 		if (m->barwin)
 			continue;
 		m->barwin = XCreateWindow(dpy, root, m->wx, m->by, m->ww, bh, 0, depth,
-		                          InputOutput, visual,
-		                          CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWColormap|CWEventMask, &wa);
+					  InputOutput, visual,
+					  CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWColormap|CWEventMask, &wa);
 		XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
 		XMapRaised(dpy, m->barwin);
 		XSetClassHint(dpy, m->barwin, &ch);
@@ -2619,11 +2619,16 @@ movestack(const Arg *arg) {
 void
 deck(Monitor *m) {
 	unsigned int i, n, h, mw, my;
+        unsigned int gapox=gappoh, gapix=gappih;
+        unsigned int gapoy=gappov, gapiy=gappiv;
 	Client *c;
 
 	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if(n == 0)
 		return;
+        else if ( n == 1)
+            gapox = gapix = gapoy = gapiy = 0;
+
 
 	if(n > m->nmaster) {
 		mw = m->nmaster ? m->ww * m->mfact : 0;
@@ -2633,16 +2638,27 @@ deck(Monitor *m) {
 		mw = m->ww;
 	for(i = my = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if(i < m->nmaster) {
-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), False);
-			my += HEIGHT(c);
+			h = (m->wh - my - 2*gapoy) / (MIN(n, m->nmaster) - i);
+			resize(
+                                c, 
+                                m->wx + gapox, 
+                                m->wy + my + (i ? 0 : gapoy),
+                                mw - (2*c->bw)-gapox-gapix/2, 
+                                h - (2*c->bw)-(m->nmaster>1 ? gapiy/2 : 0), 
+                                False
+                        );
+			my += HEIGHT(c) + gapiy;
 		}
 		else
-			resize(c, m->wx + mw, m->wy, m->ww - mw - (2*c->bw), m->wh - (2*c->bw), False);
+			resize(
+                                c, 
+                                m->wx + mw + gapix/2, 
+                                m->wy + gapoy,
+                                m->ww - mw - (2*c->bw)-gapix/2-gapox,
+                                m->wh - (2*c->bw)-2*gapoy,
+                                False
+                        );
 }
-
-
-
 
 
 int
