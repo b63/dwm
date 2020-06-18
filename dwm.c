@@ -452,11 +452,16 @@ arrangemon(Monitor *m)
 void 
 focusmaster()
 {
-
     Client *c;
     if (selmon && (c = nexttiled(selmon->clients)))
     {
-        focus(c);
+	if ( selmon->sel == c ) /* master already in focus */
+	{
+	    for(c=c->snext; c && !ISVISIBLE(c); c=c->snext);
+	}
+
+        if (c)
+            focus(c);
     }
 }
 
