@@ -238,6 +238,84 @@ drw_setscheme(Drw *drw, Clr *scm)
 		drw->scheme = scm;
 }
 
+int
+drw_get_width(Drw *drw, int numcolors, unsigned int lrpad, unsigned int betweenpad, const char *text)
+{
+	int i;
+	Fnt *curfont = drw->fonts;
+	int w = drw_text(drw, 0, 0, 0, 0, 0, text, 0)  + lrpad;
+
+	for (i = 0; i < strlen(text); i++) {
+		if (text[i] > 0 && text[i] <= numcolors) {
+			/* we found a color code
+			 * drw_text counted it as a normal character and added one character's width
+			 * we aren't going to render this character, so we remove one character's width */
+			w -= curfont->xfont->max_advance_width;
+
+			if (i == 0 || i + 1 == strlen(text)) {
+				/* we're on the first or the last character of the string
+				 * drw_text already added one character's height (divided by 2) as padding to the beginning and end
+				 * we don't want to double this padding, so we skip this character */
+				continue;
+			}
+
+			if (text[i - 1] > 0 && text[i - 1] <= numcolors) {
+				/* the previous character was also a color code
+				 * we already added padding in the previous iteration
+				 * we don't want to double this padding, so we skip this character */
+				continue;
+			}
+
+			/* we are somewhere in the middle of the string and the color has changed
+			 * we want to add one character's height (divided by 2) as padding to the end of the previous colored text
+			 * and to the beginning of the new colored text */
+			w += betweenpad;
+		}
+	}
+
+  return w;
+}
+
+void
+drw_colored_text(Drw *drw, Clr **scheme, int numcolors, int x, int y, unsigned int w, unsigned int h, unsigned int pad, unsigned int betweenpad, char *text)
+{
+	if (!drw || !drw->fonts || !drw->scheme)
+		return;
+
+	char *buf = text, *ptr = buf, c = 1;
+	int i;
+        unsigned int hh = betweenpad/2;
+        unsigned int sec = 0, secw;
+
+	while (*ptr) {
+		for (i = 0; *ptr < 0 || *ptr > numcolors; i++, ptr++);
+		if (!*ptr)
+			break;
+		c = *ptr;
+		*ptr = 0;
+		if (i)
+                {
+                        if (sec)
+                        {
+                            secw = drw_text(drw, 0, 0, 0, 0, 0, buf, 0) + hh;
+                            x=drw_text(drw, x, y, secw, h, hh, buf, 0);
+                        }
+                        else
+                        {
+                            secw = drw_text(drw, 0, 0, 0, 0, 0, buf, 0) + hh + pad;
+                            x=drw_text(drw, x, y, secw, h, pad, buf, 0);
+                        }
+                        sec += 1;
+                }
+		*ptr = c;
+		drw_setscheme(drw, scheme[c-1]);
+		buf = ++ptr;
+	}
+        secw = drw_text(drw, 0, 0, 0, 0, 0, buf, 0) + pad + (sec ? hh : pad);
+	drw_text(drw, x, y, secw, h, (sec ? hh : pad), buf, 0);
+}
+
+
 void
 drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int invert)
 {

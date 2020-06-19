@@ -10,8 +10,9 @@ static const unsigned int gappov    = 10;       /* vert outer gap between window
 static const int smartgaps          = 1;        /* 1 means no outer gap when there is only one window */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const int horizpadbar       = 5;        /* horizontal padding for statusbar */
-static const int vertpadbar        = 10;        /* vertical padding for statusbar */
+static const int horizpadbar        = 5;        /* horizontal padding for statusbar */
+static const int vertpadbar         = 10;        /* vertical padding for statusbar */
+static const int statusblockpad     = 20;        /* padding between blocks in statusbar (note: total padding)*/
 static const char *fonts[]          = { "mononoki Nerd Font:size=10", "Source Code Pro:size=10" };
 static const char dmenufont[]       = "mononoki Nerd Font:size=10";
 static const char bgcol[]           = "#222222";
@@ -24,10 +25,15 @@ static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { fgcol,    bgcol,     bordercol    },
 	[SchemeSel]  = { selfgcol, selbgcol,  selbordercol },
+        [2]          = { "#ff0000", "#000000", "#ffff00" },
+        [3]          = { "#ffffff", "#ff0000", "#ff0000" },
 };
 
-static const unsigned int baralpha        = 0xd0U;
+static const unsigned int baralpha        = 0xa0U;
 static const unsigned int borderalpha     = OPAQUE;
+/* each color scheme in colors is associated with a set of alphas*/
+/* if lenghts mismatch, color scheme will be associated with last set of alphas */
+/* see dwm.c:setup(void) */
 static const unsigned int alphas[][3] = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { OPAQUE,    baralpha,  OPAQUE },

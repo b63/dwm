@@ -52,6 +52,7 @@
                                * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
 #define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
+#define MAXCOLORS               LENGTH(colors)
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
@@ -781,8 +782,9 @@ drawbar(Monitor *m)
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on selected monitor */
 		drw_setscheme(drw, scheme[SchemeNorm]);
-		tw = TEXTW(stext);
-		drw_text(drw, m->ww - tw, 0, tw, bh, lrpad / 2, stext, 0);
+		tw = drw_get_width(drw, MAXCOLORS, lrpad, statusblockpad, stext);
+		//drw_text(drw, m->ww - tw, 0, tw, bh, lrpad / 2, stext, 0);
+		drw_colored_text(drw, scheme, MAXCOLORS,  m->ww - tw, 0, tw, bh, lrpad / 2, statusblockpad, stext);
 	}
 
 	for (c = m->clients; c; c = c->next) {
@@ -1782,6 +1784,7 @@ void
 setup(void)
 {
 	int i;
+        unsigned int maxalphaind = LENGTH(alphas)-1;
 	XSetWindowAttributes wa;
 	Atom utf8string;
 
@@ -1826,7 +1829,7 @@ setup(void)
 	/* init appearance */
 	scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
 	for (i = 0; i < LENGTH(colors); i++)
-		scheme[i] = drw_scm_create(drw, colors[i], alphas[i], 3);
+		scheme[i] = drw_scm_create( drw, colors[i], alphas[MIN(i, maxalphaind)], 3);
 	/* init bars */
 	updatebars();
 	updatestatus();
