@@ -12,7 +12,7 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const int horizpadbar        = 5;        /* horizontal padding for statusbar */
 static const int vertpadbar         = 10;        /* vertical padding for statusbar */
-static const int statusblockpad     = 20;        /* padding between blocks in statusbar (note: total padding)*/
+static const int statusblockpad     = 0;        /* padding between blocks in statusbar (note: total padding)*/
 static const char *fonts[]          = { "mononoki Nerd Font:size=10", "Source Code Pro:size=10" };
 static const char dmenufont[]       = "mononoki Nerd Font:size=10";
 static const char bgcol[]           = "#222222";
@@ -23,10 +23,11 @@ static const char selbordercol[]    = "#770000";
 static const char selbgcol[]        = "#005577";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
-	[SchemeNorm] = { fgcol,    bgcol,     bordercol    },
-	[SchemeSel]  = { selfgcol, selbgcol,  selbordercol },
-        [2]          = { "#ff0000", "#000000", "#ffff00" },
-        [3]          = { "#ffffff", "#ff0000", "#ff0000" },
+	[SchemeNorm] = { fgcol,     bgcol,      bordercol    },
+	[SchemeSel]  = { selfgcol,  selbgcol,   selbordercol },
+        [2]          = { "#ff0000", bgcol,      bordercol }, /* red text */
+        [3]          = { "#ffffff", "#ff0000",  "#ff0000" }, /* red on white URGENT*/
+        [4]          = { "#00ff00", bgcol,      bordercol }, /* green text */
 };
 
 static const unsigned int baralpha        = 0xa0U;
