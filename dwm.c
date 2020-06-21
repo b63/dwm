@@ -468,7 +468,10 @@ focusmaster()
 	}
 
         if (c)
+        {
             focus(c);
+            restack(selmon);
+        }
     }
 }
 
