@@ -239,80 +239,176 @@ drw_setscheme(Drw *drw, Clr *scm)
 }
 
 int
-drw_get_width(Drw *drw, int numcolors, unsigned int lrpad, unsigned int betweenpad, const char *text)
+is_color_char(char c)
 {
-	int i;
-	Fnt *curfont = drw->fonts;
-	int w = drw_text(drw, 0, 0, 0, 0, 0, text, 0)  + lrpad;
+	return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+}
 
-	for (i = 0; i < strlen(text); i++) {
-		if (text[i] > 0 && text[i] <= numcolors) {
-			/* we found a color code
-			 * drw_text counted it as a normal character and added one character's width
-			 * we aren't going to render this character, so we remove one character's width */
-			w -= curfont->xfont->max_advance_width;
+size_t
+drw_set_colorcode(Drw *drw, StatusColor *sc, const char **def_colors, const char *text, const unsigned int *alphas)
+{
+	if (!drw || !text || !sc)
+		return 0;
 
-			if (i == 0 || i + 1 == strlen(text)) {
-				/* we're on the first or the last character of the string
-				 * drw_text already added one character's height (divided by 2) as padding to the beginning and end
-				 * we don't want to double this padding, so we skip this character */
-				continue;
-			}
+	/* must begin with '{' */
+	if (*text != '{') return 0;
 
-			if (text[i - 1] > 0 && text[i - 1] <= numcolors) {
-				/* the previous character was also a color code
-				 * we already added padding in the previous iteration
-				 * we don't want to double this padding, so we skip this character */
-				continue;
-			}
+	size_t clr	     = 0;	/* number of colors */
+	const char *ptr  = text+1;
+	const char *names[3] = {NULL, NULL, NULL};
+	size_t lengths[3]	 = {0, 0, 0};
 
-			/* we are somewhere in the middle of the string and the color has changed
-			 * we want to add one character's height (divided by 2) as padding to the end of the previous colored text
-			 * and to the beginning of the new colored text */
-			w += betweenpad;
+
+	while (*ptr && clr < 3)
+	{
+		size_t i = 0;
+		while (i < 6 && is_color_char(ptr[i])) ++i;
+		if (i && i!=3 && i!=6) return 0; /* invalid length */
+
+		if (ptr[i] == ';' || ptr[i] == '}')
+		{
+			names[clr]	   = ptr;
+			lengths[clr++] = i;
+			ptr += i;
+
+			if (*ptr == '}') break;
+			ptr += 1; /* skip the ';' */
+		}
+		else /* invalid character */
+		{
+			return 0;
 		}
 	}
 
-  return w;
+	if (!clr || *ptr != '}') return 0;
+
+	char name_buf[8]; /* temp buffer */
+        name_buf[0] = '#';
+	const char *clrname_ptr;
+	for (size_t j = 0; j < 3; ++j)
+	{
+		size_t len = lengths[j];
+		if (len == 3)
+		{
+			for(size_t i=0; i < 3; ++i)
+			{
+				name_buf[2*i+1]=names[j][i];
+				name_buf[2*i+2]='0';
+			}
+			clrname_ptr = name_buf;
+		}
+		else if (len == 6)
+		{
+			strncpy(name_buf+1, names[j], 6);
+			name_buf[7] = 0;
+			clrname_ptr = name_buf;
+		}
+		else
+		{
+			clrname_ptr = def_colors[j];
+		}
+
+		if(strcmp(sc->names+8*j, clrname_ptr))
+		{
+			drw_clr_create(drw, &(sc->clrs[j]),  clrname_ptr, alphas[j]);
+                        strncpy(sc->names+8*j, clrname_ptr, 8);
+		}
+	}
+
+	return ptr-text+1;
 }
 
+size_t
+drw_filter_colorcodes(Drw *drw, StatusColor *sc_arr, char *dst, const char *text, const char **def_colors, const unsigned int *alphas, size_t *offsets, size_t max_colors)
+{
+	if (!text || !sc_arr || !offsets)
+		return 0;
+
+	size_t i = 0;
+	const char *filtered = text;
+	const char *ptr = text;
+	size_t jump;
+
+	while (*ptr && i < max_colors)
+	{
+		if (*ptr == '{')
+		{
+			jump = drw_set_colorcode(drw, &(sc_arr[i]), def_colors, ptr, alphas);
+			if (jump)
+			{
+				offsets[i] = filtered-text;
+				ptr += jump;
+				++i;
+				continue;
+			}
+		}
+		*dst = *ptr;
+                ++dst;
+		++filtered;
+		++ptr;
+	}
+	/* copy the rest of the text */
+	while (*ptr)
+	{
+		*dst = *ptr;
+                ++dst;
+		++ptr;
+	}
+	*dst = 0;
+	return i;
+}
+
+
 void
-drw_colored_text(Drw *drw, Clr **scheme, int numcolors, int x, int y, unsigned int w, unsigned int h, unsigned int pad, unsigned int betweenpad, char *text)
+drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offsets, size_t numcolors, int x, int y, unsigned int w, unsigned int h, unsigned int pad)
 {
 	if (!drw || !drw->fonts || !drw->scheme)
 		return;
 
-	char *buf = text, *ptr = buf, c = 1;
-	int i;
-        unsigned int hh = betweenpad/2;
-        unsigned int sec = 0, secw;
+	size_t i = 0;
+	int secw;
+	char temp;
+	char *ptr = text;
+	char *ptr_end = text;
+	unsigned int lpad = pad;
+	unsigned int rpad = pad;
 
-	while (*ptr) {
-		for (i = 0; *ptr < 0 || *ptr > numcolors; i++, ptr++);
-		if (!*ptr)
-			break;
-		c = *ptr;
-		*ptr = 0;
-		if (i)
+	/* find the last block */
+	size_t lasti = 0;
+	if (numcolors > 0) 
+            for (size_t j = 0; j < numcolors; ++j)
+		if (text[numcolors-j-1])
                 {
-                        if (sec)
-                        {
-                            secw = drw_text(drw, 0, 0, 0, 0, 0, buf, 0) + hh;
-                            x=drw_text(drw, x, y, secw, h, hh, buf, 0);
-                        }
-                        else
-                        {
-                            secw = drw_text(drw, 0, 0, 0, 0, 0, buf, 0) + hh + pad;
-                            x=drw_text(drw, x, y, secw, h, pad, buf, 0);
-                        }
-                        sec += 1;
+                    lasti = numcolors-j-1;
+                    break;
                 }
-		*ptr = c;
-		drw_setscheme(drw, scheme[c-1]);
-		buf = ++ptr;
+
+	/* draw all but last block */
+	while (i < lasti)
+	{
+		ptr_end = text + offsets[i];
+		if (ptr == ptr_end) continue;
+
+		temp = *ptr_end;
+		*ptr_end = 0;
+
+		secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad;
+		x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
+		lpad = 0;
+
+		*ptr_end = temp;
+		ptr = ptr_end;
+
+		drw_setscheme(drw, sc_arr[i].clrs);
 	}
-        secw = drw_text(drw, 0, 0, 0, 0, 0, buf, 0) + pad + (sec ? hh : pad);
-	drw_text(drw, x, y, secw, h, (sec ? hh : pad), buf, 0);
+
+	/* draw last block */
+	if (*ptr)
+	{
+                if (lasti < numcolors) drw_setscheme(drw, sc_arr[i].clrs);
+		secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad + rpad;
+		x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
+	}
 }
 
 

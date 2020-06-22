@@ -29,6 +29,12 @@ typedef struct {
 	Fnt *fonts;
 } Drw;
 
+typedef struct {
+    /* 8*3 = 24 */
+    char names[24];
+    Clr clrs[3];
+} StatusColor;
+
 /* Drawable abstraction */
 Drw *drw_create(Display *, int, Window, unsigned int, unsigned int, Visual*, unsigned int, Colormap);
 void drw_resize(Drw *drw, unsigned int w, unsigned int h);
@@ -53,10 +59,14 @@ void drw_setfontset(Drw *drw, Fnt *set);
 void drw_setscheme(Drw *drw, Clr *scm);
 
 /* Drawing functions */
-int drw_get_width(Drw *, int, unsigned int, unsigned int, const char *);
-void drw_colored_text(Drw *, Clr **, int, int, int, unsigned int, unsigned int, unsigned int, unsigned int, char *);
 void drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int invert);
 int drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert);
 
 /* Map functions */
 void drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h);
+
+/* status color functions */
+int is_color_char(char c);
+size_t drw_set_colorcode(Drw *drw, StatusColor *sc, const char **def_colors, const char *text, const unsigned int *alphas);
+size_t drw_filter_colorcodes(Drw *drw, StatusColor *sc_arr, char *dst, const char *text, const char **def_colors, const unsigned int *alphas, size_t *offsets, size_t max_colors);
+void drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offsets, size_t numcolors, int x, int y, unsigned int w, unsigned int h, unsigned int pad);
