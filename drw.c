@@ -365,7 +365,6 @@ drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offset
 	if (!drw || !drw->fonts || !drw->scheme)
 		return;
 
-
 	size_t i = 0;
 	int secw;
 	char temp;
@@ -400,7 +399,6 @@ drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offset
                     temp = *ptr_end;
                     *ptr_end = 0;
 
-                    printf("i=%lu '%s'\n", i, ptr);
                     secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad;
                     x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
                     lpad = 0;
@@ -416,14 +414,9 @@ drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offset
 	/* draw last block, if there is one*/
 	if (*ptr)
 	{
-                printf("i=%lu '%s' (lastblock)\n", i, ptr);
 		secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad + rpad;
 		x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
 	}
-
-        printf("stext: '%s', offsets: {", text);
-        for(size_t k=0; k < numcolors; ++k) printf("%lu ", offsets[k]);
-        printf("}, lasti=%lu\n\n", lasti);
 }
 
 
