@@ -53,6 +53,7 @@
 #define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MAXCOLORS               LENGTH(colors)
+#define MAX_NUMCOLORBLOCKS      10
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
@@ -273,6 +274,7 @@ static const char broken[] = "broken";
 static const char dwmdir[] = "dwm";
 static const char localshare[] = ".local/share";
 static char stext[256];
+static char filtext[256];
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
 static int bh, blw = 0;      /* bar geometry */
@@ -326,6 +328,10 @@ static LayoutInfo tagltstable[LENGTH(tags)];
 static size_t taghist[LENGTH(tags)] = { 0 };
 /* index of most recent tag in taghist */
 static size_t taghisthead = 0;
+
+/* variables for status color */
+static StatusColor colorcache[MAX_NUMCOLORBLOCKS];
+static size_t offsets[MAX_NUMCOLORBLOCKS];
 
 /* function implementations */
 void
@@ -780,14 +786,18 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
+	size_t numcolors = 0;
 	Client *c;
 
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on selected monitor */
+
+		numcolors = drw_filter_colorcodes(
+			drw, colorcache, filtext, stext, colors[SchemeNorm], alphas[SchemeNorm],
+			offsets, MAX_NUMCOLORBLOCKS);
+		tw = drw_text(drw, 0, 0, 0, 0, 0, filtext, 0) + lrpad;
 		drw_setscheme(drw, scheme[SchemeNorm]);
-		tw = drw_get_width(drw, MAXCOLORS, lrpad, statusblockpad, stext);
-		//drw_text(drw, m->ww - tw, 0, tw, bh, lrpad / 2, stext, 0);
-		drw_colored_text(drw, scheme, MAXCOLORS,  m->ww - tw, 0, tw, bh, lrpad / 2, statusblockpad, stext);
+		drw_colored_text(drw, filtext, colorcache, offsets, numcolors, m->ww-tw, 0, tw, bh, lrpad/2);
 	}
 
 	for (c = m->clients; c; c = c->next) {

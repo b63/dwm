@@ -1,33 +1,30 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 10;        /* border pixel of windows */
-static const unsigned int snap      = 32;       /* snap pixel */
-static const unsigned int gappih    = 10;       /* horiz inner gap between windows */
-static const unsigned int gappiv    = 10;       /* vert inner gap between windows */
-static const unsigned int gappoh    = 10;       /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov    = 10;       /* vert outer gap between windows and screen edge */
-static const int smartgaps          = 1;        /* 1 means no outer gap when there is only one window */
-static const int showbar            = 1;        /* 0 means no bar */
-static const int topbar             = 1;        /* 0 means bottom bar */
-static const int horizpadbar        = 5;        /* horizontal padding for statusbar */
-static const int vertpadbar         = 10;        /* vertical padding for statusbar */
-static const int statusblockpad     = 0;        /* padding between blocks in statusbar (note: total padding)*/
-static const char *fonts[]          = { "mononoki Nerd Font:size=10", "Source Code Pro:size=10" };
-static const char dmenufont[]       = "mononoki Nerd Font:size=10";
-static const char bgcol[]           = "#222222";
-static const char bordercol[]       = "#444444";
-static const char fgcol[]           = "#bbbbbb";
-static const char selfgcol[]        = "#eeeeee";
-static const char selbordercol[]    = "#770000";
-static const char selbgcol[]        = "#005577";
-static const char *colors[][3]      = {
-	/*               fg         bg         border   */
-	[SchemeNorm] = { fgcol,     bgcol,      bordercol    },
-	[SchemeSel]  = { selfgcol,  selbgcol,   selbordercol },
-        [2]          = { "#ff0000", bgcol,      bordercol }, /* red text */
-        [3]          = { "#ffffff", "#ff0000",  "#ff0000" }, /* red on white URGENT*/
-        [4]          = { "#00ff00", bgcol,      bordercol }, /* green text */
+static const unsigned int borderpx     = 10;        /* border pixel of windows */
+static const unsigned int snap         = 32;       /* snap pixel */
+static const unsigned int gappih       = 10;       /* horiz inner gap between windows */
+static const unsigned int gappiv       = 10;       /* vert inner gap between windows */
+static const unsigned int gappoh       = 10;       /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov       = 10;       /* vert outer gap between windows and screen edge */
+static const int smartgaps             = 1;        /* 1 means no outer gap when there is only one window */
+static const int showbar               = 1;        /* 0 means no bar */
+static const int topbar                = 1;        /* 0 means bottom bar */
+static const int horizpadbar           = 5;        /* horizontal padding for statusbar */
+static const int vertpadbar            = 10;        /* vertical padding for statusbar */
+static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
+static const char *fonts[]             = { "mononoki Nerd Font:size=10", "Source Code Pro:size=10" };
+static const char dmenufont[]          = "mononoki Nerd Font:size=10";
+static const char bgcol[]              = "#222222";
+static const char bordercol[]          = "#444444";
+static const char fgcol[]              = "#bbbbbb";
+static const char selfgcol[]           = "#eeeeee";
+static const char selbordercol[]       = "#770000";
+static const char selbgcol[]           = "#005577";
+static const char *colors[][3]         = {
+	/*                 fg         bg         border   */
+	[SchemeNorm]   = { fgcol,     bgcol,      bordercol    },
+	[SchemeSel]    = { selfgcol,  selbgcol,   selbordercol },
 };
 
 static const unsigned int baralpha        = 0xa0U;
