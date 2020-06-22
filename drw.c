@@ -365,6 +365,7 @@ drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offset
 	if (!drw || !drw->fonts || !drw->scheme)
 		return;
 
+
 	size_t i = 0;
 	int secw;
 	char temp;
@@ -376,39 +377,53 @@ drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offset
 	/* find the last block */
 	size_t lasti = 0;
 	if (numcolors > 0) 
+        {
             for (size_t j = 0; j < numcolors; ++j)
-		if (text[numcolors-j-1])
+		if (text[offsets[numcolors-j-1]])
                 {
                     lasti = numcolors-j-1;
                     break;
                 }
 
-	/* draw all but last block */
-	while (i < lasti)
-	{
-		ptr_end = text + offsets[i];
-		if (ptr == ptr_end) continue;
 
-		temp = *ptr_end;
-		*ptr_end = 0;
+            /* draw all but last block, unless there is no nonempty color block  */
+            while (i <= lasti)
+            {
+                    ptr_end = text + offsets[i];
+                    if (ptr == ptr_end) 
+                    {
+                        drw_setscheme(drw, sc_arr[i].clrs);
+                        ++i;
+                        continue;
+                    }
 
-		secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad;
-		x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
-		lpad = 0;
+                    temp = *ptr_end;
+                    *ptr_end = 0;
 
-		*ptr_end = temp;
-		ptr = ptr_end;
+                    printf("i=%lu '%s'\n", i, ptr);
+                    secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad;
+                    x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
+                    lpad = 0;
 
-		drw_setscheme(drw, sc_arr[i].clrs);
-	}
+                    *ptr_end = temp;
+                    ptr = ptr_end;
 
-	/* draw last block */
+                    drw_setscheme(drw, sc_arr[i].clrs);
+                    ++i;
+            }
+        }
+
+	/* draw last block, if there is one*/
 	if (*ptr)
 	{
-                if (lasti < numcolors) drw_setscheme(drw, sc_arr[i].clrs);
+                printf("i=%lu '%s' (lastblock)\n", i, ptr);
 		secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad + rpad;
 		x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
 	}
+
+        printf("stext: '%s', offsets: {", text);
+        for(size_t k=0; k < numcolors; ++k) printf("%lu ", offsets[k]);
+        printf("}, lasti=%lu\n\n", lasti);
 }
 
 
