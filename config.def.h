@@ -13,7 +13,7 @@ static const int topbar                = 1;        /* 0 means bottom bar */
 static const int horizpadbar           = 5;        /* horizontal padding for statusbar */
 static const int vertpadbar            = 10;        /* vertical padding for statusbar */
 static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
-static const char *fonts[]             = { "mononoki Nerd Font:size=10", "Source Code Pro:size=10" };
+static const char *fonts[]             = { "Twitter Color Emoji:size=10", "mononoki Nerd Font:size=10"};
 static const char dmenufont[]          = "mononoki Nerd Font:size=10";
 static const char bgcol[]              = "#222222";
 static const char bordercol[]          = "#444444";

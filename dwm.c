@@ -1368,6 +1368,7 @@ resize(Client *c, int x, int y, int w, int h, int interact)
 void
 resizeclient(Client *c, int x, int y, int w, int h)
 {
+        printf("resizing %i %i %i %i \n", x, y, w, h);
 	XWindowChanges wc;
 
 	c->oldx = c->x; c->x = wc.x = x;
@@ -2007,12 +2008,14 @@ togglefloating(const Arg *arg)
 {
 	if (!selmon->sel)
 		return;
-	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
+        /* don't float in monocle layout, seems to be cause some bug */
+	if (selmon->sel->isfullscreen || (selmon->lt[selmon->sellt] && selmon->lt[selmon->sellt]->arrange == monocle)) /* no support for fullscreen windows */
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
 	if (selmon->sel->isfloating)
 		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
 			selmon->sel->w, selmon->sel->h, 0);
+
 	arrange(selmon);
 }
 
