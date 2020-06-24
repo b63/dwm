@@ -295,6 +295,7 @@ drw_set_colorcode(Drw *drw, StatusColor *sc, const char **def_colors, const char
 				name_buf[2*i+1]=names[j][i];
 				name_buf[2*i+2]='0';
 			}
+                        name_buf[7] = 0;
 			clrname_ptr = name_buf;
 		}
 		else if (len == 6)
