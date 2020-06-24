@@ -8,12 +8,13 @@ static const unsigned int gappiv       = 10;       /* vert inner gap between win
 static const unsigned int gappoh       = 10;       /* horiz outer gap between windows and screen edge */
 static const unsigned int gappov       = 10;       /* vert outer gap between windows and screen edge */
 static const int smartgaps             = 1;        /* 1 means no outer gap when there is only one window */
+static const int swallowfloating       = 0;        /* 1 means swallow floating windows by default */
 static const int showbar               = 1;        /* 0 means no bar */
 static const int topbar                = 1;        /* 0 means bottom bar */
 static const int horizpadbar           = 5;        /* horizontal padding for statusbar */
 static const int vertpadbar            = 10;        /* vertical padding for statusbar */
 static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
-static const char *fonts[]             = { "Twitter Color Emoji:size=10", "mononoki Nerd Font:size=10"};
+static const char *fonts[]             = { "mononoki Nerd Font:size=11", "Twitter Color Emoji:size=11"};
 static const char dmenufont[]          = "mononoki Nerd Font:size=10";
 static const char bgcol[]              = "#222222";
 static const char bordercol[]          = "#444444";
@@ -43,8 +44,8 @@ typedef struct {
 	const char *name;
 	const void *cmd;
 } Sp;
-const char *spcmd1[] = {"alacritty", "--class", "spterm", NULL };
-const char *spcmd2[] = {"alacritty", "--class", "spfm",  "-e", "lf", NULL };
+const char *spcmd1[] = {"st", "-c", "spterm", "-e", "tmux", "-f", ".config/tmux/.tmux.conf", NULL };
+const char *spcmd2[] = {"st", "-c", "spfm",  "-e", "lf", NULL };
 const char *spcmd3[] = {"keeweb.sh", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
@@ -57,19 +58,21 @@ static Sp scratchpads[] = {
 /* tagging */
 static const char *tags[]           = { "q", "w", "e", "r", "t", "y", "u", "i", "o" };
 /* default layout for each tag, value is index into layouts array */
-static const size_t defaulttaglts[] = {  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0  };
+static const size_t defaulttaglts[] = {  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  2  };
 
 static const Rule rules[] = {
 	/* xprop(1):
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance         title          tags mask     isfloating        monitor */
-	{ "Gimp",	NULL,		NULL,		0,		1,		 -1 },
-	{ "Firefox",	NULL,		NULL,		1 << 8,		0,		 -1 },
-	{ NULL,		"spterm",	NULL,		SPTAG(0),	1,		 -1 },
-	{ NULL,		"spfm",		NULL,		SPTAG(1),	1,		 -1 },
-	{ NULL,		"keeweb",	NULL,		SPTAG(2),	1,		 -1 },
+	/* class      instance         title          tags mask     isterminal isfloating  noswallow      monitor */
+	{ "Gimp",	NULL,		NULL,		0,		0,	1,	 0,	 -1 },
+	{ "firefox",	"Navigator",	NULL,		1 << 8,		0,	0,	-1,	 -1 },
+	{ "Alacritty",	NULL,		NULL,		0,		1,	0,	-1,	 -1 },
+	{ NULL,		"spterm",	NULL,		SPTAG(0),	0,	1,	-1,	 -1 },
+	{ NULL,		"spfm",		NULL,		SPTAG(1),	0,	1,	-1,	 -1 },
+	{ NULL,		"keeweb",	NULL,		SPTAG(2),	0,	1,	-1,	 -1 },
+	{ NULL,		NULL,		"Event Tester",	0,		0,	1,	 1,	 -1 },/* xev */
 };
 
 /* layout(s) */
@@ -101,7 +104,7 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", bgcol, "-nf", fgcol, "-sb", selbgcol, "-sf", selfgcol, NULL };
-static const char *termcmd[]  = { "alacritty", NULL };
+static const char *termcmd[]  = { "st", "-e", "tmux", "-f", ".config/tmux/tmux.conf", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
