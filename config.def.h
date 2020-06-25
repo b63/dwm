@@ -16,19 +16,19 @@ static const int vertpadbar            = 10;        /* vertical padding for stat
 static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
 static const char *fonts[]             = { "mononoki Nerd Font:size=11", "Twitter Color Emoji:size=11"};
 static const char dmenufont[]          = "mononoki Nerd Font:size=10";
-static const char bgcol[]              = "#222222";
-static const char bordercol[]          = "#444444";
-static const char fgcol[]              = "#bbbbbb";
-static const char selfgcol[]           = "#eeeeee";
-static const char selbordercol[]       = "#770000";
-static const char selbgcol[]           = "#005577";
+static const char bgcol[]              = "#2e3440";
+static const char bordercol[]          = "#4c566a";
+static const char fgcol[]              = "#e5e9f0";
+static const char selfgcol[]           = "#eceff4";
+static const char selbordercol[]       = "#bf616a";
+static const char selbgcol[]           = "#4c566a";
 static const char *colors[][3]         = {
 	/*                 fg         bg         border   */
 	[SchemeNorm]   = { fgcol,     bgcol,      bordercol    },
 	[SchemeSel]    = { selfgcol,  selbgcol,   selbordercol },
 };
 
-static const unsigned int baralpha        = 0xa0U;
+static const unsigned int baralpha        = 0xffU;
 static const unsigned int borderalpha     = OPAQUE;
 /* each color scheme in colors is associated with a set of alphas*/
 /* if lenghts mismatch, color scheme will be associated with last set of alphas */
