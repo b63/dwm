@@ -44,7 +44,7 @@ typedef struct {
 	const char *name;
 	const void *cmd;
 } Sp;
-const char *spcmd1[] = {"st", "-c", "spterm", "-e", "tmux", "-f", ".config/tmux/.tmux.conf", NULL };
+const char *spcmd1[] = {"st", "-T", "spterm", "-c", "spterm", "-g", "100x30", "-e", "tmux", "-f", ".config/tmux/tmux.conf", NULL };
 const char *spcmd2[] = {"st", "-c", "spfm",  "-e", "lf", NULL };
 const char *spcmd3[] = {"keeweb.sh", NULL };
 static Sp scratchpads[] = {
@@ -65,14 +65,15 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance         title          tags mask     isterminal isfloating  noswallow      monitor */
-	{ "Gimp",	NULL,		NULL,		0,		0,	1,	 0,	 -1 },
-	{ "firefox",	"Navigator",	NULL,		1 << 8,		0,	0,	-1,	 -1 },
-	{ "Alacritty",	NULL,		NULL,		0,		1,	0,	-1,	 -1 },
-	{ NULL,		"spterm",	NULL,		SPTAG(0),	0,	1,	-1,	 -1 },
-	{ NULL,		"spfm",		NULL,		SPTAG(1),	0,	1,	-1,	 -1 },
-	{ NULL,		"keeweb",	NULL,		SPTAG(2),	0,	1,	-1,	 -1 },
-	{ NULL,		NULL,		"Event Tester",	0,		0,	1,	 1,	 -1 },/* xev */
+	/* class      instance         title          tags mask     isterminal isfloating    noswallow      monitor */
+	{ "Gimp",	NULL,		NULL,		0,		0,	1,		 0,	 -1 },
+	{ "firefox",	"Navigator",	NULL,		1 << 8,		0,	0,		-1,	 -1 },
+	{ "Alacritty",	NULL,		NULL,		0,		1,	0,		-1,	 -1 },
+	{ "st",		NULL,		NULL,		0,		1,	0,		-1,	 -1 },
+	{ "spterm",	"st-256color",	NULL,		SPTAG(0),	0,	1,		-1,	 -1 },
+	{ "spfm",	"st-256color",	NULL,		SPTAG(1),	0,	1,		-1,	 -1 },
+	{ NULL,		"keeweb",	NULL,		SPTAG(2),	0,	1,		-1,	 -1 },
+	{ NULL,		NULL,		"Event Tester",	0,		0,	1,		 1,	 -1 },/* xev */
 };
 
 /* layout(s) */
