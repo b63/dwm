@@ -12,9 +12,9 @@ static const int swallowfloating       = 0;        /* 1 means swallow floating w
 static const int showbar               = 1;        /* 0 means no bar */
 static const int topbar                = 1;        /* 0 means bottom bar */
 static const int horizpadbar           = 5;        /* horizontal padding for statusbar */
-static const int vertpadbar            = 10;        /* vertical padding for statusbar */
+static const int vertpadbar            = 20;        /* vertical padding for statusbar */
 static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
-static const char *fonts[]             = { "mononoki Nerd Font:size=11", "Twitter Color Emoji:size=11"};
+static const char *fonts[]             = { "OpenMojiBlack Nerd Font:size=13", "mononoki Nerd Font:size=11"};
 static const char dmenufont[]          = "mononoki Nerd Font:size=10";
 static const char bgcol[]              = "#2e3440";
 static const char bordercol[]          = "#4c566a";
@@ -56,7 +56,7 @@ static Sp scratchpads[] = {
 
 
 /* tagging */
-static const char *tags[]           = { "q", "w", "e", "r", "t", "y", "u", "i", "o" };
+static const char *tags[]           = { "q", "w", "e", "r", "t", "y", "u", "", "" };
 /* default layout for each tag, value is index into layouts array */
 static const size_t defaulttaglts[] = {  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  2  };
 
