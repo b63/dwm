@@ -484,11 +484,12 @@ arrangemon(Monitor *m)
 void 
 focusmaster()
 {
-    Client *c;
-    if (selmon && selmon->clients)
-    {
+	if (!selmon || !selmon->sel)
+		return;
+
 	int master_focused = 0;
-	c = nexttiled(selmon->clients);
+	Client *c = selmon->clients;
+
 	for (size_t i = 0; c && i < selmon->nmaster; c = nexttiled(c), i++)
 	{
 		if (selmon->sel == c)
@@ -497,17 +498,22 @@ focusmaster()
 			break;
 		}
 	}
-	if ( master_focused ) /* master already in focus */
+
+	if (master_focused)
 	{
-		c = nexttiled(c);
+		for(c=selmon->sel->snext; !c || !ISVISIBLE(c); c = c->snext);
+	}
+	else
+	{
+		c = selmon->clients;
 	}
 
-        if (c)
-        {
-            focus(c);
-            restack(selmon);
-        }
-    }
+
+	if (c)
+	{
+		focus(c);
+		restack(selmon);
+	}
 }
 
 void
