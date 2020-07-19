@@ -485,11 +485,21 @@ void
 focusmaster()
 {
     Client *c;
-    if (selmon && (c = nexttiled(selmon->clients)))
+    if (selmon && selmon->clients)
     {
-	if ( selmon->sel == c ) /* master already in focus */
+	int master_focused = 0;
+	c = nexttiled(selmon->clients);
+	for (size_t i = 0; c && i < selmon->nmaster; c = nexttiled(c), i++)
 	{
-	    for(c=c->snext; c && !ISVISIBLE(c); c=c->snext);
+		if (selmon->sel == c)
+		{
+			master_focused = 1;
+			break;
+		}
+	}
+	if ( master_focused ) /* master already in focus */
+	{
+		c = nexttiled(c);
 	}
 
         if (c)
@@ -868,7 +878,7 @@ drawbar(Monitor *m)
 
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on selected monitor */
-		printf("'%s'\n", stext);
+		//printf("'%s'\n", stext);
 		numcolors = drw_filter_colorcodes(
 			drw, colorcache, filtext, stext, colors[SchemeNorm], alphas[SchemeNorm],
 			offsets, MAX_NUMCOLORBLOCKS);
@@ -1449,7 +1459,7 @@ resize(Client *c, int x, int y, int w, int h, int interact)
 void
 resizeclient(Client *c, int x, int y, int w, int h)
 {
-        printf("resizing %i %i %i %i \n", x, y, w, h);
+        printf("resizing %i %i %i %i %s (bw: %i) \n", x, y, w, h, c->name, c->bw);
 	XWindowChanges wc;
 
 	c->oldx = c->x; c->x = wc.x = x;
@@ -1457,6 +1467,14 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	c->oldw = c->w; c->w = wc.width = w;
 	c->oldh = c->h; c->h = wc.height = h;
 	wc.border_width = c->bw;
+       if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
+           || &monocle == c->mon->lt[c->mon->sellt]->arrange)
+           && !c->isfullscreen && !c->isfloating
+           && NULL != c->mon->lt[c->mon->sellt]->arrange) {
+               c->w = wc.width += c->bw * 2;
+               c->h = wc.height += c->bw * 2;
+               wc.border_width = 0;
+       }
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
 	XSync(dpy, False);

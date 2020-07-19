@@ -61,7 +61,8 @@ utf8decode(const char *c, long *u, size_t clen)
 }
 
 Drw *
-drw_create(Display *dpy, int screen, Window root, unsigned int w, unsigned int h, Visual *visual, unsigned int depth, Colormap cmap)
+drw_create(Display *dpy, int screen, Window root, unsigned int w, unsigned int h,
+		Visual *visual, unsigned int depth, Colormap cmap)
 {
 	Drw *drw = ecalloc(1, sizeof(Drw));
 
