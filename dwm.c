@@ -488,9 +488,10 @@ focusmaster()
 		return;
 
 	int master_focused = 0;
-	Client *c = selmon->clients;
+	Client *first_tiled = nexttiled(selmon->clients);
+	Client *c = first_tiled;
 
-	for (size_t i = 0; c && i < selmon->nmaster; c = nexttiled(c), i++)
+	for (size_t i = 0; c && i < selmon->nmaster; c = nexttiled(c->next), i++)
 	{
 		if (selmon->sel == c)
 		{
@@ -501,11 +502,36 @@ focusmaster()
 
 	if (master_focused)
 	{
-		for(c=selmon->sel->snext; !c || !ISVISIBLE(c); c = c->snext);
+		Client *j = NULL;
+		int is_master = 0;
+		for(c=selmon->sel->snext; c; c = c->snext)
+		{
+			if (!ISVISIBLE(c)) continue;
+
+			/* check if c is a master client */
+			j = first_tiled;
+			for (size_t i = 0; j && i < selmon->nmaster; j = nexttiled(j->next), i++)
+			{
+				if (c == j)
+				{
+					is_master = 1;
+					break;
+				}
+			}
+			printf("is_master %i, %s\n", is_master, c->name);
+			if (!is_master)
+				break;
+		}
+
+		if (!c) 
+		{
+			c = first_tiled;
+			for (size_t i = 0; c && i < selmon->nmaster; c = nexttiled(c->next), i++);
+		}
 	}
 	else
 	{
-		c = selmon->clients;
+		c = first_tiled;
 	}
 
 
@@ -1021,19 +1047,64 @@ focusstack(const Arg *arg)
 
 	if (!selmon->sel)
 		return;
-	if (arg->i > 0) {
-		for (c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next);
-		if (!c)
-			for (c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
-	} else {
-		for (i = selmon->clients; i != selmon->sel; i = i->next)
-			if (ISVISIBLE(i))
-				c = i;
-		if (!c)
-			for (; i; i = i->next)
+
+	if (selmon->lt[selmon->sellt]->arrange == deck)
+	{
+		int master_pos = -1;
+		Client *first_tiled = nexttiled(selmon->clients);
+		i = first_tiled;
+		/* check if sel is a master client and note its position if it is*/
+		for(size_t j = 0; i && j < selmon->nmaster; i = nexttiled(i->next), j++)
+		{
+			if (selmon->sel == i)
+			{
+				master_pos = j;
+				break;
+			}
+		}
+
+		if (master_pos++ != -1)
+		{
+			/* focus on another master client */
+			if (master_pos >= selmon->nmaster)
+			{
+				c = first_tiled;
+			}
+			else
+			{
+				c = nexttiled(selmon->sel->next);
+			}
+		}
+		else
+		{
+			/* focus on another non-master client */
+			c = nexttiled(selmon->sel->next);
+			if (!c)
+			{
+				c = first_tiled;
+				/* skip past the master clients */
+				for(size_t j = 0; c && j < selmon->nmaster; c = nexttiled(c->next), j++); 
+			}
+		}
+		
+	}
+	else
+	{
+		if (arg->i > 0) {
+			for (c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next);
+			if (!c)
+				for (c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
+		} else {
+			for (i = selmon->clients; i != selmon->sel; i = i->next)
 				if (ISVISIBLE(i))
 					c = i;
+			if (!c)
+				for (; i; i = i->next)
+					if (ISVISIBLE(i))
+						c = i;
+		}
 	}
+
 	if (c) {
 		focus(c);
 		restack(selmon);
@@ -1465,7 +1536,6 @@ resize(Client *c, int x, int y, int w, int h, int interact)
 void
 resizeclient(Client *c, int x, int y, int w, int h)
 {
-        printf("resizing %i %i %i %i %s (bw: %i) \n", x, y, w, h, c->name, c->bw);
 	XWindowChanges wc;
 
 	c->oldx = c->x; c->x = wc.x = x;
