@@ -1,20 +1,20 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx     = 10;        /* border pixel of windows */
-static const unsigned int snap         = 32;       /* snap pixel */
-static const unsigned int gappih       = 10;       /* horiz inner gap between windows */
-static const unsigned int gappiv       = 10;       /* vert inner gap between windows */
-static const unsigned int gappoh       = 10;       /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov       = 10;       /* vert outer gap between windows and screen edge */
+static const unsigned int borderpx     = 5;        /* border pixel of windows */
+static const unsigned int snap         = 16;       /* snap pixel */
+static const unsigned int gappih       = 5;       /* horiz inner gap between windows */
+static const unsigned int gappiv       = 5;       /* vert inner gap between windows */
+static const unsigned int gappoh       = 5;       /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov       = 5;       /* vert outer gap between windows and screen edge */
 static const int smartgaps             = 1;        /* 1 means no outer gap when there is only one window */
 static const int swallowfloating       = 0;        /* 1 means swallow floating windows by default */
 static const int showbar               = 1;        /* 0 means no bar */
 static const int topbar                = 1;        /* 0 means bottom bar */
 static const int horizpadbar           = 5;        /* horizontal padding for statusbar */
-static const int vertpadbar            = 20;        /* vertical padding for statusbar */
+static const int vertpadbar            = 8;        /* vertical padding for statusbar */
 static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
-static const char *fonts[]             = { "OpenMojiBlack Nerd Font:size=13", "mononoki Nerd Font:size=11"};
+static const char *fonts[]             = {"mononoki Nerd Font:size=10", "OpenMojiBlack Nerd Font:size=13"};
 static const char dmenufont[]          = "mononoki Nerd Font:size=10";
 static const char bgcol[]              = "#2e3440";
 static const char bordercol[]          = "#4c566a";
@@ -79,7 +79,7 @@ static const Rule rules[] = {
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
-static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
