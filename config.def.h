@@ -109,16 +109,16 @@ static const char *termcmd[]  = { "st", "-e", "tmux", "-f", ".config/tmux/tmux.c
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
+	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_f,      spawn,          SHCMD("'lf'")   },
-	{ MODKEY,                       XK_e,      spawn,          SHCMD("'nvim-qt'")},
+	{ MODKEY,                       XK_e,      spawn,          SHCMD("")},
 
 
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_semicolon,focusmaster,   { .i=0 } },
+	{ MODKEY,                       XK_semicolon,focusmaster,  { .i=0 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_i,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
