@@ -378,40 +378,39 @@ drw_colored_text(Drw *drw, char *text, StatusColor *sc_arr, const size_t *offset
 	/* find the last block */
 	size_t lasti = 0;
 	if (numcolors > 0) 
-        {
-            for (size_t j = 0; j < numcolors; ++j)
-		if (text[offsets[numcolors-j-1]])
-                {
-                    lasti = numcolors-j-1;
-                    break;
-                }
+	{
+		for (size_t j = 0; j < numcolors; ++j)
+			if (text[offsets[numcolors-j-1]])
+			{
+				lasti = numcolors-j-1;
+				break;
+			}
 
+	/* draw all but last block, unless there is no nonempty color block  */
+	while (i <= lasti)
+	{
+		ptr_end = text + offsets[i];
+		if (ptr == ptr_end) 
+		{
+			drw_setscheme(drw, sc_arr[i].clrs);
+			++i;
+			continue;
+		}
 
-            /* draw all but last block, unless there is no nonempty color block  */
-            while (i <= lasti)
-            {
-                    ptr_end = text + offsets[i];
-                    if (ptr == ptr_end) 
-                    {
-                        drw_setscheme(drw, sc_arr[i].clrs);
-                        ++i;
-                        continue;
-                    }
+		temp = *ptr_end;
+		*ptr_end = 0;
 
-                    temp = *ptr_end;
-                    *ptr_end = 0;
+		secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad;
+		x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
+		lpad = 0;
 
-                    secw = drw_text(drw, 0, 0, 0, 0, 0, ptr, 0) + lpad;
-                    x = drw_text(drw, x, y, secw, h, lpad, ptr, 0);
-                    lpad = 0;
+		*ptr_end = temp;
+		ptr = ptr_end;
 
-                    *ptr_end = temp;
-                    ptr = ptr_end;
-
-                    drw_setscheme(drw, sc_arr[i].clrs);
-                    ++i;
-            }
-        }
+		drw_setscheme(drw, sc_arr[i].clrs);
+		++i;
+	    }
+	}
 
 	/* draw last block, if there is one*/
 	if (*ptr)
@@ -433,6 +432,7 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 	else
 		XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w - 1, h - 1);
 }
+
 
 int
 drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert)
