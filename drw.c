@@ -433,6 +433,11 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 		XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w - 1, h - 1);
 }
 
+int use_custom_fnt(long codepoint)
+{
+	return 1;
+}
+
 
 int
 drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert)
@@ -472,6 +477,27 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
 		nextfont = NULL;
 		while (*text) {
 			utf8charlen = utf8decode(text, &utf8codepoint, UTF_SIZ);
+
+			if (use_custom_fnt(utf8codepoint) )
+			{
+				/* check if there are chars that need to drawn in different font */
+					break;
+				usedfont = custom_fnt;
+				charexists = charexists || XftCharExists(drw->dpy, custom_fnt->xfont, utf8codepoint);
+				if (charexists)
+				{
+					if (usedfont == custom_fnt)
+					{
+						utf8strlen += utf8charlen;
+						text += utf8charlen;
+					}
+					else
+					{
+						nextfont = custom_fnt;
+					}
+				}
+			}
+
 			for (curfont = drw->fonts; curfont; curfont = curfont->next) {
 				charexists = charexists || XftCharExists(drw->dpy, curfont->xfont, utf8codepoint);
 				if (charexists) {
