@@ -433,11 +433,38 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 		XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w - 1, h - 1);
 }
 
-int use_custom_fnt(long codepoint)
+Fnt
+*use_custom_fnt(Drw *drw, long codepoint)
 {
-	return 1;
-}
+	if (codepoint < 0xE000L || codepoint > 0xFD46L)
+		return NULL;
 
+
+	/* index into fonts list (in config.h) */
+	int pos = 2;
+
+	switch(codepoint)
+	{
+		/* adjustment for certain characters */
+		/* smaller font size */
+		case 0xF1C1:
+			pos = 1;
+			break;
+		/* larger font size */
+		case 0xE745L:
+		case 0xFC35L:
+		case 0xFC2CL:
+		case 0xF85AL:
+			pos = 3;
+			break;
+	}
+
+	Fnt *custom_fnt = drw->fonts;
+	for (; custom_fnt && pos > 0; custom_fnt = custom_fnt->next, pos--)
+		; /* NOP */
+
+	return pos == 0 ? custom_fnt : NULL;
+}
 
 int
 drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert)
@@ -447,6 +474,7 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
 	unsigned int ew;
 	XftDraw *d = NULL;
 	Fnt *usedfont, *curfont, *nextfont;
+	Fnt *custom_fnt;
 	size_t i, len;
 	int utf8strlen, utf8charlen, render = x || y || w || h;
 	long utf8codepoint = 0;
@@ -478,36 +506,33 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
 		while (*text) {
 			utf8charlen = utf8decode(text, &utf8codepoint, UTF_SIZ);
 
-			if (use_custom_fnt(utf8codepoint) )
+			custom_fnt = use_custom_fnt(drw, utf8codepoint);
+			if (custom_fnt && XftCharExists(drw->dpy, custom_fnt->xfont, utf8codepoint))
 			{
-				/* check if there are chars that need to drawn in different font */
-					break;
-				usedfont = custom_fnt;
-				charexists = charexists || XftCharExists(drw->dpy, custom_fnt->xfont, utf8codepoint);
-				if (charexists)
+				charexists = 1;
+				if (usedfont == custom_fnt)
 				{
-					if (usedfont == custom_fnt)
-					{
-						utf8strlen += utf8charlen;
-						text += utf8charlen;
-					}
-					else
-					{
-						nextfont = custom_fnt;
-					}
+					utf8strlen += utf8charlen;
+					text += utf8charlen;
+				}
+				else
+				{
+					nextfont = custom_fnt;
 				}
 			}
-
-			for (curfont = drw->fonts; curfont; curfont = curfont->next) {
-				charexists = charexists || XftCharExists(drw->dpy, curfont->xfont, utf8codepoint);
-				if (charexists) {
-					if (curfont == usedfont) {
-						utf8strlen += utf8charlen;
-						text += utf8charlen;
-					} else {
-						nextfont = curfont;
+			else
+			{
+				for (curfont = drw->fonts; curfont; curfont = curfont->next) {
+					charexists = charexists || XftCharExists(drw->dpy, curfont->xfont, utf8codepoint);
+					if (charexists) {
+						if (curfont == usedfont) {
+							utf8strlen += utf8charlen;
+							text += utf8charlen;
+						} else {
+							nextfont = curfont;
+						}
+						break;
 					}
-					break;
 				}
 			}
 

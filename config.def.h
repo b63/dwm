@@ -14,7 +14,7 @@ static const int topbar                = 1;        /* 0 means bottom bar */
 static const int horizpadbar           = 5;        /* horizontal padding for statusbar */
 static const int vertpadbar            = 8;        /* vertical padding for statusbar */
 static const int statusblockpad        = 0;        /* padding between blocks in statusbar (note: total padding)*/
-static const char *fonts[]             = {"mononoki Nerd Font:size=10", "OpenMojiBlack Nerd Font:size=13"};
+static const char *fonts[]             = {"mononoki Nerd Font:size=10", "mononoki Nerd Font:size=11", "mononoki Nerd Font:size=12", "mononoki Nerd Font:size=14"};
 static const char dmenufont[]          = "mononoki Nerd Font:size=10";
 static const char bgcol[]              = "#2e3440";
 static const char bordercol[]          = "#4c566a";
