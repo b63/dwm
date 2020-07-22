@@ -27,6 +27,7 @@ typedef struct {
 	GC gc;
 	Clr *scheme;
 	Fnt *fonts;
+	Fnt *extra_fonts;
 } Drw;
 
 typedef struct {

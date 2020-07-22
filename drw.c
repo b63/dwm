@@ -184,7 +184,7 @@ drw_fontset_create(Drw* drw, const char *fonts[], size_t fontcount)
 			ret = cur;
 		}
 	}
-	return (drw->fonts = ret);
+	return ret;
 }
 
 void
@@ -441,25 +441,25 @@ Fnt
 
 
 	/* index into fonts list (in config.h) */
-	int pos = 2;
+	int pos = 1;
 
 	switch(codepoint)
 	{
 		/* adjustment for certain characters */
 		/* smaller font size */
 		case 0xF1C1:
-			pos = 1;
+			pos = 0;
 			break;
 		/* larger font size */
 		case 0xE745L:
 		case 0xFC35L:
 		case 0xFC2CL:
 		case 0xF85AL:
-			pos = 3;
+			pos = 2;
 			break;
 	}
 
-	Fnt *custom_fnt = drw->fonts;
+	Fnt *custom_fnt = drw->extra_fonts;
 	for (; custom_fnt && pos > 0; custom_fnt = custom_fnt->next, pos--)
 		; /* NOP */
 

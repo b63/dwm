@@ -1993,7 +1993,9 @@ setup(void)
 	xinitvisual();
 	inittagltarr();
 	drw = drw_create(dpy, screen, root, sw, sh, visual, depth, cmap);
-	if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
+	
+	if (!(drw->fonts=drw_fontset_create(drw, fonts, LENGTH(fonts))) 
+		|| !(drw->extra_fonts=drw_fontset_create(drw, extra_fonts, LENGTH(extra_fonts))))
 		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h + horizpadbar;
 	bh = drw->fonts->h + vertpadbar;
